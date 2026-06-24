@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRM — Входящие заявки</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css" />
+  <style>
+    :root {
+      --primary: #1F4E79;
+      --accent:  #2E75B6;
+      --bg:      #F4F7FB;
+      --card:    #FFFFFF;
+      --text:    #1a1a2e;
+      --muted:   #6b7280;
+      --border:  #d1d5db;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0f172a; --card:#1e293b; --text:#f1f5f9; --muted:#94a3b8; --border:#334155; }
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* Header */
+    header { background: var(--primary); color: #fff; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .logo { width: 38px; height: 38px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .logo span { color: var(--primary); font-weight: 900; font-size: 16px; }
+    header h1 { font-size: 1.1rem; font-weight: 700; }
+    #clock { font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+    /* Stats */
+    .stats { display: flex; gap: 16px; padding: 20px 24px; flex-wrap: wrap; }
+    .stat { background: var(--card); border-radius: 12px; padding: 16px 22px; flex: 1; min-width: 140px; border: 1.5px solid var(--border); }
+    .stat-val { font-size: 2rem; font-weight: 800; color: var(--primary); }
+    .stat-label { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+
+    /* Toolbar */
+    .toolbar { padding: 0 24px 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .btn { display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: 8px; padding: 8px 16px; font-size: .85rem; font-weight: 600; cursor: pointer; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--accent); }
+    .filter-btn { background: var(--card); border: 1.5px solid var(--border); color: var(--text); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* Modal */
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: none; align-items: center; justify-content: center; z-index: 100; }
+    .overlay.open { display: flex; }
+    .modal { background: var(--card); border-radius: 14px; padding: 28px; width: 420px; max-width: 95vw; }
+    .modal h2 { color: var(--primary); margin-bottom: 20px; font-size: 1.1rem; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: .82rem; color: var(--muted); margin-bottom: 4px; }
+    .field input, .field select {
+      width: 100%; border: 1.5px solid var(--border); border-radius: 8px;
+      padding: 9px 12px; font-size: .9rem; background: var(--bg); color: var(--text);
+    }
+    .field input:focus, .field select:focus { outline: none; border-color: var(--accent); }
+    .modal-btns { display: flex; gap: 10px; margin-top: 18px; }
+    .btn-cancel { background: var(--bg); border: 1.5px solid var(--border); color: var(--text); }
+
+    /* Table */
+    .table-wrap { padding: 0 24px 32px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 12px; overflow: hidden; }
+    th { background: var(--primary); color: #fff; padding: 11px 14px; text-align: left; font-size: .82rem; font-weight: 600; }
+    td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: .85rem; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(46,117,182,.06); }
+
+    /* Avatar */
+    .ava { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: .8rem; color: #fff; flex-shrink: 0; }
+    .client-cell { display: flex; align-items: center; gap: 10px; }
+    .client-info { display: flex; flex-direction: column; }
+    .client-name { font-weight: 600; }
+    .client-service { font-size: .75rem; color: var(--muted); }
+
+    /* Badges */
+    .badge { display: inline-block; border-radius: 20px; padding: 3px 12px; font-size: .75rem; font-weight: 600; cursor: pointer; }
+    .badge-new     { background: #E6F1FB; color: #1F4E79; }
+    .badge-process { background: #FAEEDA; color: #92400e; }
+    .badge-done    { background: #EAF3DE; color: #166534; }
+
+    /* Delete */
+    .btn-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.1rem; padding: 4px; border-radius: 6px; }
+    .btn-del:hover { color: #dc2626; background: #fee2e2; }
+
+    /* Empty */
+    .empty { text-align: center; padding: 48px; color: var(--muted); display: none; }
+    .empty i { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo"><span>C</span></div>
+    <div>
+      <h1>CRM — Входящие заявки</h1>
+      <div style="font-size:.75rem;opacity:.7">Телекоммуникационная компания</div>
+    </div>
+  </div>
+  <div id="clock"></div>
+</header>
+
+<div class="stats">
+  <div class="stat"><div class="stat-val" id="cntAll">0</div><div class="stat-label"><i class="ti ti-list"></i> Всего заявок</div></div>
+  <div class="stat"><div class="stat-val" id="cntNew">0</div><div class="stat-label"><i class="ti ti-circle-dot"></i> Новые</div></div>
+  <div class="stat"><div class="stat-val" id="cntDone">0</div><div class="stat-label"><i class="ti ti-circle-check"></i> Обработано</div></div>
+</div>
+
+<div class="toolbar">
+  <button class="btn btn-primary" onclick="openModal()"><i class="ti ti-plus"></i> Новая заявка</button>
+  <button class="btn filter-btn active" data-filter="all"   onclick="setFilter('all',this)">Все</button>
+  <button class="btn filter-btn"        data-filter="new"   onclick="setFilter('new',this)">Новые</button>
+  <button class="btn filter-btn"        data-filter="process" onclick="setFilter('process',this)">В работе</button>
+  <button class="btn filter-btn"        data-filter="done"  onclick="setFilter('done',this)">Готово</button>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Клиент / Услуга</th>
+        <th><i class="ti ti-phone"></i> Телефон</th>
+        <th><i class="ti ti-user"></i> Менеджер</th>
+        <th><i class="ti ti-clock"></i> Время заявки</th>
+        <th>Статус</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="empty" id="empty"><i class="ti ti-inbox"></i>Заявок нет</div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="closeModalIfOutside(event)">
+  <div class="modal">
+    <h2><i class="ti ti-plus"></i> Новая заявка</h2>
+    <div class="field">
+      <label>ФИО клиента <span style="color:#dc2626">*</span></label>
+      <input id="mFio" type="text" placeholder="Фамилия Имя Отчество" />
+    </div>
+    <div class="field">
+      <label>Номер телефона <span style="color:#dc2626">*</span></label>
+      <input id="mPhone" type="tel" placeholder="+7 (___) ___-__-__" />
+    </div>
+    <div class="field">
+      <label>Услуга</label>
+      <select id="mService">
+        <option value="">— не выбрано —</option>
+        <option>ШПД</option>
+        <option>TV</option>
+        <option>FMS</option>
+        <option>Комплект ШПД+TV</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Менеджер</label>
+      <select id="mManager">
+        <option value="">— не выбрано —</option>
+        <option>Калибеков Ерасыл</option>
+        <option>Нурсултанов Абзал</option>
+        <option>Байораз Нурлан</option>
+      </select>
+    </div>
+    <div id="mErr" style="color:#dc2626;font-size:.8rem;display:none">Заполните обязательные поля</div>
+    <div class="modal-btns">
+      <button class="btn btn-primary" style="flex:1" onclick="addLead()">Добавить заявку</button>
+      <button class="btn btn-cancel"  onclick="closeModal()">Отмена</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PALETTES = ["#1F4E79","#166534","#92400e","#6b21a8","#0f766e"];
+let leads = [];
+let idSeq = 1;
+let currentFilter = "all";
+
+function ava(name, id) {
+  const parts = name.trim().split(" ");
+  const initials = (parts[0]?.[0] || "") + (parts[1]?.[0] || "");
+  const color = PALETTES[id % PALETTES.length];
+  return `<div class="ava" style="background:${color}">${initials.toUpperCase()}</div>`;
+}
+
+function fmtDate(ts) {
+  const d = new Date(ts);
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const yy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2,"0");
+  const mi = String(d.getMinutes()).padStart(2,"0");
+  return `${dd}.${mm}.${yy} ${hh}:${mi}`;
+}
+
+const STATUS_CYCLE = { new: "process", process: "done", done: "new" };
+const STATUS_LABEL = { new: "Новая", process: "В работе", done: "Завершена" };
+const STATUS_CLASS = { new: "badge-new", process: "badge-process", done: "badge-done" };
+
+function render() {
+  const list = currentFilter === "all" ? leads : leads.filter(l => l.status === currentFilter);
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+
+  document.getElementById("empty").style.display = list.length ? "none" : "block";
+
+  list.forEach(l => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>
+        <div class="client-cell">
+          ${ava(l.fio, l.id)}
+          <div class="client-info">
+            <span class="client-name">${l.fio}</span>
+            <span class="client-service">${l.service || "—"}</span>
+          </div>
+        </div>
+      </td>
+      <td><i class="ti ti-phone"></i> ${l.phone}</td>
+      <td>${l.manager || "—"}</td>
+      <td>${fmtDate(l.ts)}</td>
+      <td>
+        <span class="badge ${STATUS_CLASS[l.status]}" onclick="cycleStatus(${l.id})">
+          ${STATUS_LABEL[l.status]}
+        </span>
+      </td>
+      <td>
+        <button class="btn-del" onclick="deleteLead(${l.id})" title="Удалить">
+          <i class="ti ti-trash"></i>
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Counters
+  document.getElementById("cntAll").textContent  = leads.length;
+  document.getElementById("cntNew").textContent  = leads.filter(l => l.status === "new").length;
+  document.getElementById("cntDone").textContent = leads.filter(l => l.status === "done").length;
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  render();
+}
+
+function cycleStatus(id) {
+  const l = leads.find(l => l.id === id);
+  if (l) { l.status = STATUS_CYCLE[l.status]; render(); }
+}
+
+function deleteLead(id) {
+  leads = leads.filter(l => l.id !== id);
+  render();
+}
+
+function openModal() {
+  ["mFio","mPhone","mService","mManager"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el.tagName === "SELECT") el.selectedIndex = 0; else el.value = "";
+  });
+  document.getElementById("mErr").style.display = "none";
+  document.getElementById("overlay").classList.add("open");
+}
+function closeModal() { document.getElementById("overlay").classList.remove("open"); }
+function closeModalIfOutside(e) { if (e.target === document.getElementById("overlay")) closeModal(); }
+
+function addLead() {
+  const fio   = document.getElementById("mFio").value.trim();
+  const phone = document.getElementById("mPhone").value.trim();
+  if (!fio || !phone) { document.getElementById("mErr").style.display = "block"; return; }
+  leads.unshift({
+    id: idSeq++,
+    fio,
+    phone,
+    service: document.getElementById("mService").value,
+    manager: document.getElementById("mManager").value,
+    ts: Date.now(),
+    status: "new",
+  });
+  closeModal();
+  render();
+}
+
+// Clock
+function tick() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,"0");
+  const mm = String(now.getMinutes()).padStart(2,"0");
+  const ss = String(now.getSeconds()).padStart(2,"0");
+  document.getElementById("clock").textContent = `${hh}:${mm}:${ss}`;
+}
+setInterval(tick, 1000);
+tick();
+
+// Demo data
+leads = [
+  { id: idSeq++, fio: "Сейткали Дамир", phone: "+7 701 123-45-67", service: "ШПД", manager: "Калибеков Ерасыл", ts: Date.now() - 1800000, status: "process" },
+  { id: idSeq++, fio: "Ахметова Гульнара", phone: "+7 777 987-65-43", service: "TV", manager: "Нурсултанов Абзал", ts: Date.now() - 3600000, status: "new" },
+  { id: idSeq++, fio: "Жексенбаев Тимур", phone: "+7 705 555-12-34", service: "Комплект ШПД+TV", manager: "Байораз Нурлан", ts: Date.now() - 7200000, status: "done" },
+];
+render();
+</script>
+</body>
+</html>

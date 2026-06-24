@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Корпоративная платформа</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css" />
+  <style>
+    :root { --primary: #1F4E79; --accent: #2E75B6; --bg: #F4F7FB; --card: #fff; --text: #1a1a2e; --muted: #6b7280; --border: #d1d5db; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#0f172a; --card:#1e293b; --text:#f1f5f9; --muted:#94a3b8; --border:#334155; } }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: var(--primary); color: #fff; padding: 20px 32px; display: flex; align-items: center; gap: 16px; }
+    .logo { width: 44px; height: 44px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .logo span { color: var(--primary); font-weight: 900; font-size: 20px; }
+    header h1 { font-size: 1.25rem; font-weight: 700; }
+    header p  { font-size: .8rem; opacity: .7; }
+    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 16px; }
+    .hero { text-align: center; margin-bottom: 48px; }
+    .hero h2 { font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
+    .hero p  { color: var(--muted); font-size: 1rem; max-width: 480px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; width: 100%; max-width: 800px; }
+    .card { background: var(--card); border: 2px solid var(--border); border-radius: 16px; padding: 32px 24px; text-align: center; text-decoration: none; color: var(--text); }
+    .card:hover { border-color: var(--accent); }
+    .card-icon { font-size: 2.5rem; color: var(--accent); margin-bottom: 16px; }
+    .card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; color: var(--primary); }
+    .card p  { font-size: .82rem; color: var(--muted); line-height: 1.5; }
+    footer { text-align: center; padding: 20px; font-size: .75rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo"><span>П</span></div>
+  <div>
+    <h1>Корпоративная цифровая платформа</h1>
+    <p>Телекоммуникационная компания · 2025</p>
+  </div>
+</header>
+<main>
+  <div class="hero">
+    <h2>Выберите модуль</h2>
+    <p>Платформа включает портал для абонентов и CRM-дашборд для менеджеров</p>
+  </div>
+  <div class="grid">
+    <a class="card" href="portal/index.html">
+      <div class="card-icon"><i class="ti ti-users"></i></div>
+      <h3>Портал абонента</h3>
+      <p>Выбор персонального менеджера, WhatsApp-связь, форма подтверждения</p>
+    </a>
+    <a class="card" href="crm/index.html">
+      <div class="card-icon"><i class="ti ti-layout-dashboard"></i></div>
+      <h3>CRM-дашборд</h3>
+      <p>Входящие заявки, статусы, фильтры, счётчики в реальном времени</p>
+    </a>
+  </div>
+</main>
+<footer>© 2025 Корпоративная цифровая платформа</footer>
+</body>
+</html>
